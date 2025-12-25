@@ -1,0 +1,731 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Bloodmoon-Develoment/Nexo-JSON-Schema/dialog.schema.json",
+  "title": "Nexo Dialog",
+  "description": "A Nexo dialog",
+  "$ref": "#/$defs/dialog",
+  "$defs": {
+    "dialog": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": [
+            "NOTICE",
+            "CONFIRM",
+            "MULTI",
+            "LIST",
+            "LINK"
+          ],
+          "description": "The core of a Dialog is the type of Dialog you want to use.",
+          "default": "NOTICE"
+        },
+        "base": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "The title of the Dialog, is always visible on the screen"
+            },
+            "externalTitle": {
+              "type": "string",
+              "description": "Name used for buttons that link to this Dialog, defaults to title"
+            },
+            "canCloseWithEscape": {
+              "type": "boolean",
+              "description": "If the Dialog can be dismissed with Escape Key"
+            },
+            "afterAction": {
+              "enum": [
+                "NONE",
+                "CLOSE",
+                "WAIT_FOR_RESPONSE"
+              ],
+              "description": "* NONE - Keeps the current dialog screen open\n* CLOSE (Default) - Close and return to the previous non-dialog screen (if any)\n* WAIT_FOR_RESPONSE - Replaces the current screen with a \"Waiting for Response\""
+            },
+            "bodies": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/dialogBodyEntry"
+              }
+            },
+            "inputs": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/dialogInputEntry"
+              }
+            }
+          },
+          "required": [
+            "title"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "type",
+        "base"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "NOTICE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "action": {
+                "$ref": "#/$defs/dialogAction"
+              }
+            },
+            "required": [
+              "action"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "CONFIRM"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "yesButton": {
+                "$ref": "#/$defs/dialogAction"
+              },
+              "noButton": {
+                "$ref": "#/$defs/dialogAction"
+              }
+            },
+            "required": [
+              "yesButton",
+              "noButton"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "LIST"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "buttonWidth": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1024,
+                "description": "The width of this button. Defaults to 150."
+              },
+              "columns": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "The number of columns. Defaults to 2."
+              },
+              "dialogs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "A list of Dialog-IDs to display"
+              },
+              "exitAction": {
+                "$ref": "#/$defs/dialogAction"
+              }
+            },
+            "required": [
+              "buttonWidth",
+              "dialogs"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "MULTI"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "buttonWidth": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1024,
+                "description": "The width of this button. Defaults to 150."
+              },
+              "columns": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "The number of columns. Defaults to 2."
+              },
+              "exitAction": {
+                "$ref": "#/$defs/dialogAction"
+              },
+              "actions": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/dialogAction"
+                }
+              }
+            },
+            "required": [
+              "buttonWidth",
+              "actions"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "LINK"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "buttonWidth": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1024,
+                "description": "The width of this button. Defaults to 150."
+              },
+              "columns": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "The number of columns. Defaults to 2."
+              },
+              "exitAction": {
+                "$ref": "#/$defs/dialogAction"
+              }
+            },
+            "required": [
+              "buttonWidth"
+            ],
+            "additionalProperties": false
+          }
+        }
+      ]
+    },
+    "dialogAction": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string",
+          "description": "Text to display on the button."
+        },
+        "tooltip": {
+          "type": "string",
+          "description": "Optional text to display when button is highlighted or hovered over."
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024,
+          "description": "Width of the button. Defaults to 150."
+        },
+        "action": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "enum": [
+                "OPEN_URL",
+                "RUN_COMMAND",
+                "SUGGEST_COMMAND",
+                "CHANGE_PAGE",
+                "CLIPBOARD",
+                "SHOW_DIALOG",
+                "CUSTOM",
+                "DYNAMIC_RUN_COMMAND",
+                "DYNAMIC_CUSTOM"
+              ],
+              "description": "DialogActions are divided in two types, Static & Dynamic.\nStatic-actions do not depend on the value of an input field.\nDynamic-actions can be used in conjunction with the value of input fields."
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false,
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "type": {
+                    "const": "OPEN_URL"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "The URL to open."
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "type": {
+                    "const": "RUN_COMMAND"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "command": {
+                    "type": "string",
+                    "description": "The command to run. Does not need to be prefixed with a `/` slash."
+                  }
+                },
+                "required": [
+                  "command"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "type": {
+                    "const": "SUGGEST_COMMAND"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "command": {
+                    "type": "string",
+                    "description": "The command to run. Does not need to be prefixed with a `/` slash."
+                  }
+                },
+                "required": [
+                  "command"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "type": {
+                    "const": "CHANGE_PAGE"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "page": {
+                    "type": "integer",
+                    "description": "The page to change to."
+                  }
+                },
+                "required": [
+                  "page"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "type": {
+                    "const": "CLIPBOARD"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "description": "The text to copy."
+                  }
+                },
+                "required": [
+                  "value"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "type": {
+                    "const": "SHOW_DIALOG"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "dialog": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "description": "Dialog ID to open."
+                      },
+                      {
+                        "$ref": "#/$defs/dialog"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "dialog"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "type": {
+                    "const": "CUSTOM"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "ID to identify the event."
+                  },
+                  "payload": {
+                    "type": "string",
+                    "description": "Optional payload of the event"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "type": {
+                    "const": "DYNAMIC_RUN_COMMAND"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "template": {
+                    "type": "string",
+                    "description": "A string with a macro template to be interpreted as a command."
+                  }
+                },
+                "required": [
+                  "template"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "type": {
+                    "const": "DYNAMIC_CUSTOM"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "additions": {
+                    "type": "object",
+                    "description": "Fields to be added to payload."
+                  },
+                  "id": {
+                    "type": "string",
+                    "description": "Namespaced ID."
+                  }
+                },
+                "required": [
+                  "additions",
+                  "id"
+                ]
+              }
+            }
+          ],
+          "description": "Action to perform when button is clicked."
+        }
+      },
+      "required": [
+        "label",
+        "action",
+        "width"
+      ],
+      "additionalProperties": false
+    },
+    "dialogBodyEntry": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "enum": [
+                "MESSAGE"
+              ]
+            },
+            "message": {
+              "type": "string"
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1024,
+              "description": "Maximum width of message. Defaults to 200."
+            }
+          },
+          "required": [
+            "type",
+            "message"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "enum": [
+                "ITEM"
+              ]
+            },
+            "description": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "contents": {
+                      "type": "string"
+                    },
+                    "width": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 1024,
+                      "description": "Maximum width of message. Defaults to 200."
+                    }
+                  },
+                  "required": [
+                    "contents"
+                  ]
+                }
+              ]
+            },
+            "showDecorations": {
+              "type": "boolean",
+              "description": "If true, count and damage bar will be rendered over the item. Defaults to true."
+            },
+            "showTooltip": {
+              "type": "boolean",
+              "description": "If true, item tooltip will show up when item is hovered. Defaults to true."
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 256,
+              "description": "Horizontal size of element. Defaults to 16."
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 256,
+              "description": "Vertical size of element. Defaults to 16."
+            }
+          }
+        }
+      ]
+    },
+    "dialogInputEntry": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "enum": [
+                "TEXT"
+              ]
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1024,
+              "description": "The width of the text input field. Defaults to 200."
+            },
+            "label": {
+              "type": "string"
+            },
+            "labelVisible": {
+              "type": "boolean",
+              "description": "Controls if the label is visible for the input-field."
+            },
+            "maxLength": {
+              "type": "integer",
+              "description": "The max length of the text input."
+            },
+            "initial": {
+              "type": "string",
+              "description": "The initial value in the input-field when the Dialog is opened"
+            },
+            "multiLineOptions": {
+              "type": "object",
+              "properties": {
+                "maxLines": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "Limits maximum lines"
+                },
+                "height": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 512,
+                  "description": "Height of the input-field"
+                }
+              },
+              "required": [
+                "height"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "enum": [
+                "BOOL"
+              ]
+            },
+            "label": {
+              "type": "string"
+            },
+            "initial": {
+              "type": "boolean",
+              "description": "The initial state of the checkbox."
+            },
+            "onTrue": {
+              "type": "string",
+              "description": "The string value to return when checked, default is \"true\"."
+            },
+            "onFalse": {
+              "type": "string",
+              "description": "The string value to return when checked, default is \"false\"."
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "enum": [
+                "NUMBER"
+              ]
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1024,
+              "description": "The width of the text input field. Defaults to 200."
+            },
+            "label": {
+              "type": "string"
+            },
+            "labelFormat": {
+              "type": "string",
+              "description": "A translation key used for building the label."
+            },
+            "start": {
+              "type": "integer",
+              "description": "The lowest value of the slider."
+            },
+            "end": {
+              "type": "integer",
+              "description": "The highest value of the slider."
+            },
+            "initial": {
+              "type": "integer",
+              "description": "The initial value between start & end for the slider when Dialog is shown."
+            },
+            "step": {
+              "type": "number",
+              "description": "The incremental value for each notch on the slider, if unspecified, slider has no notches."
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "enum": [
+                "NUMBER"
+              ]
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1024,
+              "description": "The width of the text input field. Defaults to 200."
+            },
+            "label": {
+              "type": "string"
+            },
+            "labelVisible": {
+              "type": "boolean",
+              "description": "Controls if the label is visible for the input-field."
+            },
+            "options": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "display": {
+                    "type": "string"
+                  },
+                  "initial": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "display",
+                  "initial"
+                ],
+                "additionalProperties": false
+              },
+              "minProperties": 1
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}
