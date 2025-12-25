@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/Bloodmoon-Develoment/Nexo-JSON-Schema/dialog.schema.json",
+  "$id": "https://github.com/Bloodmoon-Develoment/Nexo-JSON-Schema/blob/master/dialog.schema.json",
   "title": "Nexo Dialog",
   "description": "A Nexo dialog",
   "$ref": "#/$defs/dialog",
